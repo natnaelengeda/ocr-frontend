@@ -7,13 +7,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Button } from './ui/button';
 
 interface IPreviewImage {
+  imagePreview: string;
+  handleUploadClick: () => void;
   open: boolean;
   setOpen: any;
 }
 
-export default function PreviewImage({ open, setOpen }: IPreviewImage) {
+export default function PreviewImage({ imagePreview, handleUploadClick, open, setOpen }: IPreviewImage) {
   return (
     <Dialog
       open={open}
@@ -22,8 +25,29 @@ export default function PreviewImage({ open, setOpen }: IPreviewImage) {
         <DialogHeader>
           <DialogTitle>Preview Image</DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete your account
-            and remove your data from our servers.
+            <div
+              className='w-full h-auto flex flex-col items-start justify-start gap-5'>
+
+              <img
+                src={imagePreview || ""}
+                alt="Reciept Image" />
+
+
+              <div className='flex flex-row items-center justify-start gap-3'>
+                {
+                  imagePreview &&
+                  <>
+                    <Button
+                      onClick={() => {
+                        setOpen(false);
+                        handleUploadClick();
+                      }}>
+                      Upload Again
+                    </Button>
+                    <Button>Confirm</Button></>
+                }
+              </div>
+            </div>
           </DialogDescription>
         </DialogHeader>
       </DialogContent>

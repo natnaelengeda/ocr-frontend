@@ -12,11 +12,12 @@ import { Button } from './ui/button';
 interface IPreviewImage {
   imagePreview: string;
   handleUploadClick: () => void;
+  uploadFunction: () => void;
   open: boolean;
   setOpen: any;
 }
 
-export default function PreviewImage({ imagePreview, handleUploadClick, open, setOpen }: IPreviewImage) {
+export default function PreviewImage({ imagePreview, handleUploadClick, open, uploadFunction, setOpen }: IPreviewImage) {
   return (
     <Dialog
       open={open}
@@ -44,7 +45,10 @@ export default function PreviewImage({ imagePreview, handleUploadClick, open, se
                       }}>
                       Upload Again
                     </Button>
-                    <Button>Confirm</Button></>
+                    <Button
+                      onClick={uploadFunction}>
+                      Confirm
+                    </Button></>
                 }
               </div>
             </div>

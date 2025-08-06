@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 // icons
 import PreviewImage from "@/components/preview-image";
@@ -7,41 +7,57 @@ import TakePicture from "@/components/take-picture";
 
 // icons
 import { Camera, Upload } from "lucide-react";
-import { gql, useApolloClient } from "@apollo/client";
+import { gql, useApolloClient, useMutation } from "@apollo/client";
+import toast from "react-hot-toast";
 
 export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const MAX_FILE_SIZE_MB = 3;
-  const apolloClient = useApolloClient();
+  const [uploadFile, setUploadFile] = useState<any>(null);
 
   const [openPreview, setOpenPreview] = useState(false);
   const [openPictureModal, setOpenPictureModal] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  //   const CREATE_RECEIPT_WITH_UPLOAD = gql`
+  //   mutation CreateReceiptWithUpload($image: Upload!) {
+  //     createReceiptWithUpload(image: $image) {
+  //       id
+  //       storeName
+  //       purchaseDate
+  //       totalAmount
+  //       imageUrl
+  //       createdAt
+  //       items {
+  //         id
+  //         name
+  //         quantity
+  //       }
+  //     }
+  //   }
+  // `;
+
+  // Define your GraphQL mutation
   const CREATE_RECEIPT_WITH_UPLOAD = gql`
-  mutation CreateReceiptWithUpload($image: Upload!) {
+  mutation createReceiptWithUpload($image: Upload!) {
     createReceiptWithUpload(image: $image) {
       id
-      storeName
-      purchaseDate
-      totalAmount
-      imageUrl
+      url
       createdAt
-      items {
-        id
-        name
-        quantity
-      }
     }
   }
 `;
+
+  const [createReceipt] = useMutation(CREATE_RECEIPT_WITH_UPLOAD);
+  const apolloClient = useApolloClient();
+
 
   const handleUploadClick = () => {
     fileInputRef.current?.click(); // Trigger file input
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
     if (!file) return;
@@ -67,9 +83,25 @@ export default function Home() {
 
     // ✅ Process the image file here (e.g., upload to server or preview)
     console.log("Accepted image:", file);
+    setUploadFile(file);
     // uploadImage(file);
-    uploadReceiptImage(file);
+    // uploadReceiptImage(file);
   };
+
+  const uploadFunction = async () => {
+    try {
+      console.log(uploadFile)
+      // await createReceipt({
+      //   variables: {
+      //     image: uploadFile
+      //   }
+      // });
+      // apolloClient.resetStore(); // Refresh any relevant cached data
+    } catch (error) {
+      console.error("Upload failed:", error);
+      // Optional: show a UI error message here
+    }
+  }
 
 
 
@@ -95,136 +127,12 @@ export default function Home() {
     error?: string;
   }
 
-  const uploadReceiptImage = async (
-    file: File,
-    graphqlEndpoint: string = 'http://localhost:7454/graphql'
-  ): Promise<UploadResult> => {
-    try {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        return {
-          success: false,
-          error: 'Please select an image file'
-        };
-      }
 
-      // Validate file size (optional - adjust as needed)
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      if (file.size > maxSize) {
-        return {
-          success: false,
-          error: 'File size too large. Please select a file under 10MB'
-        };
-      }
-
-      // Create FormData for multipart/form-data request
-      const formData = new FormData();
-
-      // GraphQL operation
-      const operations = JSON.stringify({
-        query: `
-        mutation CreateReceiptWithUpload($image: Upload!) {
-          createReceiptWithUpload(image: $image) {
-            id
-            storeName
-            purchaseDate
-            totalAmount
-            imageUrl
-            createdAt
-            items {
-              id
-              name
-              quantity
-            }
-          }
-        }
-      `,
-        variables: {
-          image: null
-        }
-      });
-
-      // Map for file uploads
-      const map = JSON.stringify({
-        "0": ["variables.image"]
-      });
-
-      // Append required fields for GraphQL multipart request
-      formData.append('operations', operations);
-      formData.append('map', map);
-      formData.append('0', file);
-
-      // Make the request
-      const response = await fetch(graphqlEndpoint, {
-        method: 'POST',
-        body: formData,
-        // Note: Don't set Content-Type header, let the browser set it with boundary
-        headers: {
-          // Add any auth headers here if needed
-          // 'Authorization': `Bearer ${token}`,
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      // Check for GraphQL errors
-      if (result.errors) {
-        throw new Error(result.errors[0].message || 'GraphQL error occurred');
-      }
-
-      return {
-        success: true,
-        receipt: result.data.createReceiptWithUpload
-      };
-
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to upload receipt'
-      };
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
     }
-  };
-
-  async function uploadImage(file: File) {
-    const operations = JSON.stringify({
-      query: `
-      mutation UploadReceipt($file: Upload!) {
-        uploadReceipt(file: $file) {
-          id
-          storeName
-          purchaseDate
-          totalAmount
-          imageUrl
-        }
-      }
-    `,
-      variables: {
-        file: null,
-      },
-    });
-
-    const map = JSON.stringify({
-      "0": ["variables.file"],
-    });
-
-    const formData = new FormData();
-    formData.append("operations", operations);
-    formData.append("map", map);
-    formData.append("0", file);
-
-    const res = await fetch('http://localhost:7454/graphql', {
-      method: "POST",
-      body: formData,
-    });
-
-    const result = await res.json();
-    return result.data.uploadReceipt;
-  }
+  }, [error]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-start py-8 px-4 bg-gray-50">
@@ -272,6 +180,7 @@ export default function Home() {
         <PreviewImage
           imagePreview={imagePreview}
           handleUploadClick={handleUploadClick}
+          uploadFunction={uploadFunction}
           open={openPreview}
           setOpen={setOpenPreview} />}
       <TakePicture open={openPictureModal} setOpen={setOpenPictureModal} />

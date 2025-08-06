@@ -19,12 +19,13 @@ export interface Receipt {
 
 const GRAPHQL_ENDPOINT = "http://localhost:7454/graphql";
 
-export default function page() {
+export default function Page() {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openDetail, setOpenDetail] = useState<Receipt | null>(null);
 
-  const fetchReceipts = async () => {
+  const fetchReceipts = async (open?: boolean) => {
     setLoading(true);
     setError(null);
 
@@ -59,6 +60,10 @@ export default function page() {
       const json = await res.json();
       if (json.errors) throw new Error(json.errors[0].message);
       setReceipts(json.data.receipts);
+      if (open) {
+        const receiptLength = json.data.receipts.length();
+        setOpenDetail(json.data.receipts[receiptLength - 1]);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -72,8 +77,14 @@ export default function page() {
 
   return (
     <div className="w-full h-full flex flex-col items-start justify-start gap-5">
-      <Home fetchReceipts={fetchReceipts} />
-      <List receipts={receipts} loading={loading} error={error} />
+      <Home
+        fetchReceipts={fetchReceipts} />
+      <List
+        receipts={receipts}
+        loading={loading}
+        error={error}
+        openDetail={openDetail}
+        setOpenDetail={setOpenDetail} />
     </div>
   );
 }

@@ -10,22 +10,6 @@ import toast from "react-hot-toast";
 // icons
 import { Camera, Upload } from "lucide-react";
 
-interface ReceiptItem {
-  id: string;
-  name: string;
-  quantity: number;
-}
-
-interface Receipt {
-  id: string;
-  storeName: string;
-  purchaseDate: string;
-  totalAmount: number;
-  imageUrl: string;
-  createdAt: string;
-  items: ReceiptItem[];
-}
-
 export default function Home({ fetchReceipts }: any) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -110,7 +94,7 @@ export default function Home({ fetchReceipts }: any) {
 
       if (res.status == 200) {
         toast.success("Upload successful!");
-        fetchReceipts();
+        fetchReceipts(true);
         setOpenPreview(false)
         setloading(false);
       } else {

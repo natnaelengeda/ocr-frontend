@@ -26,14 +26,11 @@ import { Loader2, MoreVertical } from "lucide-react";
 import { formatTimestampToReadableDate } from '@/lib/formatDate';
 import { Receipt } from '@/app/page';
 
-
-
-export default function List({ receipts, loading, error }: any) {
+export default function List({ receipts, loading, error, openDetail, setOpenDetail }: any) {
   const imageLocation = "http://localhost:7454"
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState<JSX.Element | null>(null);
-
 
   const openImageModal = (url: string) => {
     setModalContent(<img src={url} alt="Receipt" className="w-full" />);
@@ -55,11 +52,17 @@ export default function List({ receipts, loading, error }: any) {
       </div>
     );
     setModalOpen(true);
+    setOpenDetail(null);
   };
 
   if (loading) return <div className="flex justify-center items-center p-10"><Loader2 className="animate-spin" /></div>;
   if (error) return <div className="text-red-500 text-center p-5">Error: {error}</div>;
 
+  useEffect(() => {
+    if (openDetail) {
+      openResultModal(openDetail);
+    }
+  }, [openDetail]);
 
   return (
     <div className='w-full flex flex-col items-center justify-start gap-5'>

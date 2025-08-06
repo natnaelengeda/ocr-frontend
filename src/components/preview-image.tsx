@@ -8,16 +8,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from './ui/button';
+import LoadingSpinner from './loading-spinner';
 
 interface IPreviewImage {
   imagePreview: string;
   handleUploadClick: () => void;
   uploadFunction: () => void;
   open: boolean;
+  loading: boolean;
   setOpen: any;
 }
 
-export default function PreviewImage({ imagePreview, handleUploadClick, open, uploadFunction, setOpen }: IPreviewImage) {
+export default function PreviewImage({ imagePreview, handleUploadClick, open, loading, uploadFunction, setOpen }: IPreviewImage) {
   return (
     <Dialog
       open={open}
@@ -46,7 +48,12 @@ export default function PreviewImage({ imagePreview, handleUploadClick, open, up
                       Upload Again
                     </Button>
                     <Button
-                      onClick={uploadFunction}>
+                      onClick={uploadFunction}
+                      disabled={loading}>
+                      {
+                        loading &&
+                        <LoadingSpinner size={20} />
+                      }
                       Confirm
                     </Button></>
                 }

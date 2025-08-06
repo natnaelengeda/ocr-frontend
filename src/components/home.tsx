@@ -1,16 +1,32 @@
+
 "use client";
 import { useState, useRef, useEffect } from "react";
 
-// icons
+// components
 import PreviewImage from "@/components/preview-image";
 import TakePicture from "@/components/take-picture";
+import toast from "react-hot-toast";
 
 // icons
 import { Camera, Upload } from "lucide-react";
-import { gql, useApolloClient, useMutation } from "@apollo/client";
-import toast from "react-hot-toast";
 
-export default function Home() {
+interface ReceiptItem {
+  id: string;
+  name: string;
+  quantity: number;
+}
+
+interface Receipt {
+  id: string;
+  storeName: string;
+  purchaseDate: string;
+  totalAmount: number;
+  imageUrl: string;
+  createdAt: string;
+  items: ReceiptItem[];
+}
+
+export default function Home({ fetchReceipts }: any) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const MAX_FILE_SIZE_MB = 3;
@@ -20,41 +36,10 @@ export default function Home() {
   const [openPictureModal, setOpenPictureModal] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  //   const CREATE_RECEIPT_WITH_UPLOAD = gql`
-  //   mutation CreateReceiptWithUpload($image: Upload!) {
-  //     createReceiptWithUpload(image: $image) {
-  //       id
-  //       storeName
-  //       purchaseDate
-  //       totalAmount
-  //       imageUrl
-  //       createdAt
-  //       items {
-  //         id
-  //         name
-  //         quantity
-  //       }
-  //     }
-  //   }
-  // `;
-
-  // Define your GraphQL mutation
-  const CREATE_RECEIPT_WITH_UPLOAD = gql`
-  mutation createReceiptWithUpload($image: Upload!) {
-    createReceiptWithUpload(image: $image) {
-      id
-      url
-      createdAt
-    }
-  }
-`;
-
-  const [createReceipt] = useMutation(CREATE_RECEIPT_WITH_UPLOAD);
-  const apolloClient = useApolloClient();
-
+  const [loading, setloading] = useState(false);
 
   const handleUploadClick = () => {
-    fileInputRef.current?.click(); // Trigger file input
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,50 +66,61 @@ export default function Home() {
     setImagePreview(imageURL);
     setOpenPreview(true)
 
-    // ✅ Process the image file here (e.g., upload to server or preview)
     console.log("Accepted image:", file);
     setUploadFile(file);
-    // uploadImage(file);
-    // uploadReceiptImage(file);
   };
 
   const uploadFunction = async () => {
     try {
-      console.log(uploadFile)
-      // await createReceipt({
-      //   variables: {
-      //     image: uploadFile
-      //   }
-      // });
-      // apolloClient.resetStore(); // Refresh any relevant cached data
+      setloading(true);
+
+      const operations = JSON.stringify({
+        query: `
+      mutation ($image: Upload!) {
+        uploadReceipt(image: $image) {
+          status
+          message
+          imageUrl
+        }
+      }
+    `,
+        variables: {
+          image: null,
+        },
+      });
+
+      const map = JSON.stringify({
+        "0": ["variables.image"],
+      });
+
+      const formData = new FormData();
+      formData.append("operations", operations);
+      formData.append("map", map);
+      formData.append("0", uploadFile);
+
+      const res = await fetch("http://localhost:7454/graphql", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "x-apollo-operation-name": "UploadReceipt",
+        },
+      });
+
+      const result = await res.json();
+
+      if (res.status == 200) {
+        toast.success("Upload successful!");
+        fetchReceipts();
+        setOpenPreview(false)
+        setloading(false);
+      } else {
+        toast.error(result?.data?.uploadReceipt?.message || "Upload failed.");
+        setloading(false);
+      }
+
     } catch (error) {
       console.error("Upload failed:", error);
-      // Optional: show a UI error message here
     }
-  }
-
-
-
-  interface ReceiptItem {
-    id: string;
-    name: string;
-    quantity: number;
-  }
-
-  interface Receipt {
-    id: string;
-    storeName: string;
-    purchaseDate: string;
-    totalAmount: number;
-    imageUrl: string;
-    createdAt: string;
-    items: ReceiptItem[];
-  }
-
-  interface UploadResult {
-    success: boolean;
-    receipt?: Receipt;
-    error?: string;
   }
 
 
@@ -135,7 +131,7 @@ export default function Home() {
   }, [error]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start py-8 px-4 bg-gray-50">
+    <div className="w-full flex flex-col items-center justify-start py-8 px-4 ">
       {/* Title */}
       <div className="text-center max-w-3xl mb-10 px-2">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-3">
@@ -182,8 +178,13 @@ export default function Home() {
           handleUploadClick={handleUploadClick}
           uploadFunction={uploadFunction}
           open={openPreview}
-          setOpen={setOpenPreview} />}
-      <TakePicture open={openPictureModal} setOpen={setOpenPictureModal} />
+          loading={loading}
+          setOpen={setOpenPreview} />
+      }
+
+      <TakePicture
+        open={openPictureModal}
+        setOpen={setOpenPictureModal} />
     </div>
   );
 }

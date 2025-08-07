@@ -1,6 +1,6 @@
 # OCR Frontend (Next.js)
 
-This is the frontend for the OCR Receipt Extraction App. It is built using **Next.js**, **Tailwind CSS**, and **React**, and is designed to work seamlessly with the [OCR backend](https://github.com/your-backend-repo) which handles file uploads and text extraction.
+This is the frontend for the OCR Receipt Extraction App. It is built using **Next.js**, **Tailwind CSS**, and **React**, and is designed to work seamlessly with the [OCR backend](https://github.com/natnaelengeda/ocr-backend.git) which handles file uploads and text extraction.
 
 ---
 

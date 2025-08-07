@@ -60,8 +60,9 @@ export default function Page() {
       const json = await res.json();
       if (json.errors) throw new Error(json.errors[0].message);
       setReceipts(json.data.receipts);
+
+      const receiptLength = json.data.receipts.length;
       if (open) {
-        const receiptLength = json.data.receipts.length();
         setOpenDetail(json.data.receipts[receiptLength - 1]);
       }
     } catch (err: any) {

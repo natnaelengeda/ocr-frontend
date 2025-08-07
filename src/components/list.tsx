@@ -58,11 +58,15 @@ export default function List({ receipts, loading, error, openDetail, setOpenDeta
   if (loading) return <div className="flex justify-center items-center p-10"><Loader2 className="animate-spin" /></div>;
   if (error) return <div className="text-red-500 text-center p-5">Error: {error}</div>;
 
-  useEffect(() => {
-    if (openDetail) {
-      openResultModal(openDetail);
-    }
-  }, [openDetail]);
+  const openFunction = () => {
+    // if (openDetail) {
+    openResultModal(openDetail ?? null);
+    // }
+  }
+
+  // useEffect(() => {
+  //   // openFunction();
+  // }, [openDetail]);
 
   return (
     <div className='w-full flex flex-col items-center justify-start gap-5'>

@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OCR Frontend (Next.js)
 
-## Getting Started
+This is the frontend for the OCR Receipt Extraction App. It is built using **Next.js**, **Tailwind CSS**, and **React**, and is designed to work seamlessly with the [OCR backend](https://github.com/your-backend-repo) which handles file uploads and text extraction.
 
-First, run the development server:
+---
+
+## 🚀 Features
+
+- Upload receipt images (JPG, PNG, etc.)
+- Preview uploaded images
+- Send images to backend for OCR processing
+- Display extracted text
+
+---
+
+## 🛠️ Tech Stack
+
+- [Next.js](https://nextjs.org/)
+- [React](https://react.dev/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Lucide Icons](https://lucide.dev/)
+- REST API integration with the OCR backend
+
+---
+
+## 🧩 Prerequisites
+
+Before you start, make sure you have the following installed:
+
+- **Node.js** (v18 or higher recommended)
+- **npm** or **yarn**
+- The [OCR backend](https://github.com/natnaelengeda/ocr-backend.git) running locally at `http://localhost:7454`
+
+---
+
+## ⚙️ Installation
+
+```bash
+git clone https://github.com/natnaelengeda/ocr-frontend.git
+cd ocr-frontend
+npm install
+# or
+yarn install
+```
+
+---
+
+## 🏃 Running the Development Server
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This will start the app at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Make sure your OCR backend is running at `http://localhost:7454`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📁 Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+NO need for environment variables, everything is in the code
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🖼️ Upload Notes
 
-## Deploy on Vercel
+- Maximum image size: **3MB**
+- Supported formats: **.jpg**, **.jpeg**, **.png**
+- Once uploaded, the image will be previewed and sent to the backend for processing.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📤 Response Format
+
+The backend should respond with something like:
+
+```json
+{
+  "success": true,
+  "text": "Extracted receipt text here..."
+}
+```
+
+---
+
+## 🧪 Testing the Upload
+
+You can use the interface to:
+
+- Upload a new receipt
+- See a preview before submission
+- View extracted text returned by backend
+- copy the text
+
+---
+
+## 🧹 Cleanup
+
+To reset your local environment, run:
+
+```bash
+rm -rf node_modules
+rm package-lock.json # or yarn.lock
+npm install
+```
+
+---
+
+## 🤝 License
+
+MIT — free to use and modify.
+
+---
+
+## 👨‍💻 Author
+
+Developed by [Natnael Engeda](https://github.com/natnaelengeda)

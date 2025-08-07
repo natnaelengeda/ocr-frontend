@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 
 // icons
 import { Camera, Upload } from "lucide-react";
+import TestItemsPreview from "./test-items-preview";
 
 export default function Home({ fetchReceipts }: any) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -18,6 +19,9 @@ export default function Home({ fetchReceipts }: any) {
 
   const [openPreview, setOpenPreview] = useState(false);
   const [openPictureModal, setOpenPictureModal] = useState(false);
+  const [openTestModal, setOpenTestModals] = useState(false);
+  const [testImage, setTestImage] = useState<number | null>(null);
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [loading, setloading] = useState(false);
@@ -90,7 +94,6 @@ export default function Home({ fetchReceipts }: any) {
         },
       });
 
-      const result = await res.json();
 
       if (res.status == 200) {
         toast.success("Upload successful!");
@@ -98,10 +101,70 @@ export default function Home({ fetchReceipts }: any) {
         setOpenPreview(false)
         setloading(false);
       } else {
-        toast.error(result?.data?.uploadReceipt?.message || "Upload failed.");
+        toast.error("Unable to Read Reciept, Try Another One");
         setloading(false);
       }
 
+    } catch (error) {
+      console.error("Upload failed:", error);
+    }
+  }
+
+  const uploadTestImages = async () => {
+    try {
+      setloading(true);
+
+      const operations = JSON.stringify({
+        query: `
+      mutation ($image: Upload!) {
+        uploadReceipt(image: $image) {
+          status
+          message
+          imageUrl
+        }
+      }
+    `,
+        variables: {
+          image: null,
+        },
+      });
+
+      const map = JSON.stringify({
+        "0": ["variables.image"],
+      });
+
+      if (testImage) {
+        const imageUrl = (testImage == 1 ? "./visible-reciept.jpg" : "./not-so-visible-reciept.jpg");
+        const response = await fetch(imageUrl)
+        const blob = await response.blob()
+
+        const formData = new FormData();
+        formData.append("operations", operations);
+        formData.append("map", map);
+        formData.append("0", blob);
+
+        const res = await fetch("http://localhost:7454/graphql", {
+          method: "POST",
+          body: formData,
+          headers: {
+            "x-apollo-operation-name": "UploadReceipt",
+          },
+        });
+
+
+        if (res.status == 200) {
+          toast.success("Upload successful!");
+          fetchReceipts(true);
+          setOpenPreview(false)
+          setloading(false);
+          setOpenTestModals(false);
+        } else {
+          toast.error("Unable to Read Reciept, Try Another One");
+          setloading(false);
+        }
+      } else {
+        toast.error("Test Image Not Selected")
+      }
     } catch (error) {
       console.error("Upload failed:", error);
     }
@@ -146,6 +209,30 @@ export default function Home({ fetchReceipts }: any) {
             <Upload className="w-10 h-10 text-gray-600 mb-3" />
             <span className="text-gray-700 font-medium text-lg">Upload Image</span>
           </button>
+
+          <button
+            className="flex flex-col items-center justify-center w-full sm:w-48 h-48 border border-gray-300 rounded-xl hover:border-blue-500 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer overflow-hidden">
+            <div className="w-full h- flex flex-col items-center justify-start p-2 gap-2" >
+              <span
+                onClick={() => {
+                  setOpenTestModals(true);
+                  setTestImage(1);
+                }}
+                className="w-full h-12 border border-rounded flex items-center justify-center text-lg bg-blue-600 text-white rounded-xl box-transition">
+                Visible Reciept
+              </span>
+              <span
+                onClick={() => {
+                  setOpenTestModals(true)
+                  setTestImage(2);
+                }}
+                className="w-full h-15 border border-rounded flex items-center justify-center text-lg bg-primary text-white rounded-xl box-transition">
+                Not So Visible Reciept
+              </span>
+            </div>
+            <span className="text-gray-700 font-medium text-lg">Test Reciepts</span>
+          </button>
+
           <input
             ref={fileInputRef}
             type="file"
@@ -169,6 +256,17 @@ export default function Home({ fetchReceipts }: any) {
       <TakePicture
         open={openPictureModal}
         setOpen={setOpenPictureModal} />
+
+      {
+        testImage &&
+        <TestItemsPreview
+          open={openTestModal}
+          setOpen={setOpenTestModals}
+          image={testImage}
+          handleUpload={uploadTestImages}
+          loading={loading} />
+      }
+
     </div>
   );
 }

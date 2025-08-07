@@ -19,7 +19,7 @@ This is the frontend for the OCR Receipt Extraction App. It is built using **Nex
 - [React](https://react.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Lucide Icons](https://lucide.dev/)
-- REST API integration with the OCR backend
+- GRAPHQL API integration with the OCR backend
 
 ---
 
